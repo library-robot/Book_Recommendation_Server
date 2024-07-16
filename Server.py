@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 
 
-def bookrecommend(user_id) :
+def bookrecommend(user_id, gender) :
     Library = pd.read_csv('C:/Users/Master/.spyder-py3/book_data_fin_3.csv', encoding='cp949') #전체 책 데이터
     Library_book_borrow = pd.read_csv('C:/Users/Master/.spyder-py3/회원대출0411.csv') #전체 대출 내역
     book_borrow_user_sort = Library_book_borrow.sort_values(by = ['member_id']) #사용자이름으로 정렬
@@ -115,15 +115,20 @@ def bookrecommend(user_id) :
         grouped_dict[keys[i]].reset_index(drop = False, inplace = True)
 
     us1 = user_id
-    user_info = grouped_dict[keys[us1]]
+    if us1 in grouped_dict :
+        user_info = grouped_dict[us1]
+        if(user_info['gender'][0] == 'M') :
+            recommendations =pd.read_csv('C:/Users/Master/.spyder-py3/cos_2_100.csv', encoding='cp949') #전체 책 데이터
+        else :
+            recommendations =pd.read_csv('C:/Users/Master/.spyder-py3/cos_1_010.csv', encoding='cp949') #전체 책 데이터
+    else : 
+        
+        if(gender == 'M') :
+            recommendations =pd.read_csv('C:/Users/Master/.spyder-py3/cos_2_100.csv', encoding='cp949') #전체 책 데이터
+        else :
+            recommendations =pd.read_csv('C:/Users/Master/.spyder-py3/cos_1_010.csv', encoding='cp949') #전체 책 데이터
 
 
-
-
-    if(user_info['gender'][0] == 'M') :
-        recommendations =pd.read_csv('C:/Users/Master/.spyder-py3/cos_2_100.csv', encoding='cp949') #전체 책 데이터
-    else :
-        recommendations =pd.read_csv('C:/Users/Master/.spyder-py3/cos_1_010.csv', encoding='cp949') #전체 책 데이터
 
 
 
@@ -136,10 +141,14 @@ def bookrecommend(user_id) :
 
 #isbn을 기준으로 현재 대출 상태 정보를 추가 
     delete1 = pd.merge(delete1, delete2[['isbn','lend_status']], on ='isbn',how = 'left')
+    delete1['lend_status']  = delete1['lend_status'].fillna('F')
 
 #유저의 대출기록에서 상태를 가져옴으로 대출기록이 존재하지 않는 경우 lend_state를 부여 
-    delete1['lend_status']  = delete1['lend_status'].fillna('F')
-    result = delete1[~delete1['isbn'].isin(user_info['isbn'])].dropna(axis = 'index', how = 'any', subset =['isbn'])
+    if us1 in grouped_dict :
+        result = delete1[~delete1['isbn'].isin(user_info['isbn'])].dropna(axis = 'index', how = 'any', subset =['isbn'])
+    else :
+        result = delete1
+
     sorted_result = result.sort_values(by='similarity', ascending = False)
 
 
@@ -152,6 +161,6 @@ def bookrecommend(user_id) :
         random_column = max_columns.sample(3)         
   
     return random_column
-
-print(bookrecommend(1900))
+qwert123 = bookrecommend(10000,'F')
+print(qwert123)
 
